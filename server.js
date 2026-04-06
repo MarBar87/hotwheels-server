@@ -1,9 +1,11 @@
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 const app = express();
 
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
+app.use(express.static(path.join(__dirname, 'public')));
 
 const API_KEY = process.env.ANTHROPIC_API_KEY;
 
@@ -15,7 +17,9 @@ app.post('/scan', async (req, res) => {
     if (!base64) return res.status(400).json({ error: 'Kein Bild' });
 
     const colText = collection?.length > 0
-      ? `Aktuelle Sammlung (${collection.length} Autos):\n${collection.map((c, i) => `${i+1}. ${c.name}${c.seriesName ? ' | ' + c.seriesName : ''}${c.seriesNum ? ' Nr.' + c.seriesNum + '/' + c.seriesTotal : ''}`).join('\n')}`
+      ? `Aktuelle Sammlung (${collection.length} Autos):\n${collection.map((c,i) =>
+          `${i+1}. ${c.name}${c.seriesName?' | '+c.seriesName:''}${c.seriesNum?' Nr.'+c.seriesNum+'/'+c.seriesTotal:''}`
+        ).join('\n')}`
       : 'Sammlung ist noch leer.';
 
     const prompt = `Du bist ein Hot Wheels Experte. Analysiere das Foto.
@@ -74,6 +78,10 @@ Antworte NUR mit JSON (kein Markdown):
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
+});
+
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 const PORT = process.env.PORT || 3000;
