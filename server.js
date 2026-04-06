@@ -5,7 +5,6 @@ const app = express();
 
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
-app.use(express.static(path.join(__dirname, 'public')));
 
 const API_KEY = process.env.ANTHROPIC_API_KEY;
 
@@ -80,8 +79,9 @@ Antworte NUR mit JSON (kein Markdown):
   }
 });
 
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+// Nur GET-Routen zur index.html weiterleiten, NICHT POST
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 const PORT = process.env.PORT || 3000;
